@@ -10,3 +10,5 @@ b) You'll need to create your own API keys for Google Maps (developers.google.co
 c) You'll need to create an account on T-dev (dev.telstra.com) - place your username in AirMaps/Airmap/username and password in AirMaps/Airmap/password
 d) There is no pre-requisite for models.py under Airmap (unless you want to do something smart with this, like tracking users and running analytics etc).
 e) I'm running wsgi (wsgi.py has been included) with Apache2 (httpd.conf is not included).
+
+Disclaimer: All references to Google and Telstra are purely for instructional purposes. 
