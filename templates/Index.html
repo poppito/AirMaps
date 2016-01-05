@@ -1,0 +1,107 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+</head>
+<title>Telstra AirMap!</title>
+<body class="bg-cyan">
+<div id ="alltext">
+<h3 id="mainhead">Welcome to Telstra AirMap!</h3>
+<h4 id="heading"> A map of Telstra Air's Wifi hotspots!</h4>
+<h4 id= "instruct"> When prompted, please give the browser permissions to detect your location</h4>
+<p id="error"></p>
+</div>
+
+<style>
+body {
+background: 100%;
+background: #4E638E;
+width: 100%;
+}
+
+#alltext{
+margin: auto;
+height: 300px;
+width: 600px;
+border-radius: 10px;
+background: #7788AA;
+border: 10px solid #061639;
+}
+
+#mainhead,#heading,#instruct,#error {
+color: #2e4372; 
+text-align: center;
+margin-left: auto;
+margin-right: auto;
+}	
+</style>
+
+
+<script>
+var x = document.getElementById("demo");
+
+window.onload = getLocation();
+
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else { 
+        x.innerHTML = "Sorry, location services are not supported by this browser";
+    }
+}
+
+function showPosition(position) {
+	var lat = position.coords.latitude;
+   	var lon = position.coords.longitude;
+	post("getLocation",lat, lon);
+}
+
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            x.innerHTML = "Sorry, you need to share your location, for this application to work properly!"
+            break;
+        case error.POSITION_UNAVAILABLE:
+            x.innerHTML = "Location information is unavailable. Please try again later"
+            break;
+        case error.TIMEOUT:
+            x.innerHTML = "The request to get your location timed out. Please try again later."
+            break;
+        case error.UNKNOWN_ERROR:
+            x.innerHTML = "An unknown error occurred."
+            break;
+    }
+}
+
+
+function post(path, lat, lon ) {
+    method = "POST";
+
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+            var hiddenField1 = document.createElement("input");
+            hiddenField1.setAttribute("type", "hidden");
+            hiddenField1.setAttribute("name", "lat");
+            hiddenField1.setAttribute("value", lat);
+	    var hiddenField2 = document.createElement("input");
+	    hiddenField2.setAttribute("type", "hidden");
+  	    hiddenField2.setAttribute("name", "lon");
+	    hiddenField2.setAttribute("value", lon);
+            form.appendChild(hiddenField1);
+	    form.appendChild(hiddenField2);
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+</script>
+
+</div>
+</body>
+</html>

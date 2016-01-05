@@ -1,0 +1,163 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Telstra Airmap</title>
+<h2 id="welcome"> Welcome to Telstra Airmaps! </h2>
+<h4 id="statusmsg"> Click Anywhere on the map to reveal T-Air hotspots!</h4>
+<h4 id="instruct"> Click on a T-Air symbol to find out the address.<br>
+You can also drag the map across and click on it to find out T-Air hotspots in that area!</h4>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 60%;
+	width: 70%;
+	margin-left: auto;
+	margin-right: auto }
+     
+	#statusmsg, #instruct, #welcome{
+	text-align: center;
+	margin-left: auto;
+	padding-bottom: 10px;
+	margin-left: auto
+	}
+    </style>
+  </head>
+  <body onload = "initMap();" >
+    <div id="map"></div>
+<script>
+
+function initMap() {
+var zoomCount = {{zoomCount}};
+var error = "{{ Error }}";
+
+var x = document.getElementById("statusmsg");
+if (zoomCount == 0)
+{
+  zoomCount = 14;
+  x.innerHTML = "no results found, however you can zoom out to find hotsposts in <i> other </i> places, closer to you!";
+}
+var y = document.getElementById("errormsg");
+if ( error == "request worked OK")
+{
+	//do something else
+}
+else
+{
+	y.innerHTML = error;
+}
+var lat = parseFloat({{latCenter}});
+var lon = parseFloat({{lonCenter}});
+var map = new google.maps.Map(document.getElementById('map'), {
+
+    zoom: zoomCount,
+    center: {lat: lat , lng: lon }
+  });
+setMarkers(map);
+map.addListener('click', function(e){
+searchArea(e.latLng, map)
+});
+}
+
+function searchArea(latLng, map)
+{
+        latLng = latLng.toString();
+        llStr = initVals(latLng);
+	post("getLocation", llStr[0], llStr[1]);
+        }
+
+function initAddresses(input)
+{
+re = /\d+\s\w+\s*\w*\s*\w*\s*\w*/i;
+addressStr = input.match(re);
+if (addressStr == null)
+{
+	addressStr = "no add specified";
+}
+addressStr = addressStr.toString();
+return addressStr;
+}
+
+
+function initVals(input) {
+var res = input.replace(/ /g, "");
+res = res.replace(/\(/g,"");
+res = res.replace(/\)/g,"");
+var latlngStr = res.split(',' , 2);
+return latlngStr;
+}
+
+function setMarkers(map) {
+var image = {
+url: "{% static "img/icon.jpg" %}",
+size: new google.maps.Size(32,32),
+origin: new google.maps.Point(0,0),
+anchor: new google.maps.Point(0,32)
+};
+
+var jsArray = "dummy data";
+
+jsArray = [
+{% for k,v in params.iteritems %}
+                "{{v}}" {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                ];
+	if (jsArray != "dummy data")
+	{
+        	for (i=0; i<jsArray.length; i++)
+        	{
+                	var input = jsArray[i];
+                	var latlngStr = initVals(input);
+			var addressStr = initAddresses(input);
+                	var lat_ = latlngStr[0];
+                	var lon_ = latlngStr[1];
+			var infowindow = new google.maps.InfoWindow({
+    			content: addressStr
+  			});
+			var marker = new google.maps.Marker( {
+			position: {lat: parseFloat(lat_), lng: parseFloat(lon_)},
+			map: map,
+			icon: image,
+		});
+
+			var infowindow = new google.maps.InfoWindow();
+			google.maps.event.addListener(marker, 'click', (function(marker, addressStr, infowindow) { return function() { infowindow.setContent(addressStr); 
+							infowindow.open(map, marker); };
+						}) (marker, addressStr, infowindow));
+		}
+	}		
+}
+
+function post(path, lat, lon ) {
+    method = "POST";
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+            var hiddenField1 = document.createElement("input");
+            hiddenField1.setAttribute("type", "hidden");
+            hiddenField1.setAttribute("name", "lat");
+            hiddenField1.setAttribute("value", lat);
+	    var hiddenField2 = document.createElement("input");
+	    hiddenField2.setAttribute("type", "hidden");
+  	    hiddenField2.setAttribute("name", "lon");
+	    hiddenField2.setAttribute("value", lon);
+            form.appendChild(hiddenField1);
+	    form.appendChild(hiddenField2);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&signed_in=true&callback=initMap"
+    async defer></script>
+  </body>
+</html>
